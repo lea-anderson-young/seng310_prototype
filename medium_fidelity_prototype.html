@@ -1,0 +1,2036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UVic Connect - Student Discovery Prototype</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            uvic: {
+              blue: '#002754',
+              gold: '#F08B00',
+              red: '#C63527',
+              accent: '#0d5c9c',
+              slate: '#546B82',
+              bg: '#F8FAFC'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom scrollbar styling for medium-fidelity feel */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    
+    /* Subtle phone frame shadow */
+    .phone-mockup {
+      box-shadow: 0 25px 60px -15px rgba(0, 39, 84, 0.2), 0 0 0 10px #1e293b, 0 0 0 12px #334155;
+    }
+
+    .slide-enter {
+      animation: fadeIn 0.25s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col items-center justify-start p-2 sm:p-6 md:p-8">
+
+  <!-- Header & Context Banner -->
+  <header class="w-full max-w-4xl text-center mb-4 sm:mb-6">
+    <div class="inline-flex items-center gap-2 px-3 py-1 bg-amber-100 border border-amber-300 text-amber-900 rounded-full text-xs font-semibold tracking-wide uppercase mb-2">
+      <i class="fa-solid fa-graduation-cap"></i> UVic Peer Connection Study &bull; Mid-Fi Vertical Prototype
+    </div>
+    <h1 class="text-2xl sm:text-3xl font-bold text-uvic-blue tracking-tight">UVic Student Connector</h1>
+    <p class="text-sm text-slate-600 max-w-xl mx-auto mt-1">
+      Addressing student loneliness and peer discovery barriers through personalized clubs, event attendance visibility, and direct meetups.
+    </p>
+  </header>
+
+  <!-- Prototype Outer Container -->
+  <main class="w-full max-w-md flex flex-col items-center">
+    
+    <!-- Phone Chassis -->
+    <div class="phone-mockup w-full bg-white rounded-[40px] overflow-hidden flex flex-col border border-slate-200 relative aspect-[9/19] max-h-[840px] min-h-[720px] transition-all">
+      
+      <!-- Top Speaker & Camera Notch Bar -->
+      <div class="w-full bg-slate-900 text-white px-6 pt-3 pb-2 flex justify-between items-center text-xs select-none z-30">
+        <span id="statusBarTime" class="font-semibold tracking-wider">9:41</span>
+        <div class="h-4 w-28 bg-black rounded-full flex items-center justify-center">
+          <div class="h-2 w-2 rounded-full bg-slate-800 mr-2"></div>
+          <div class="h-1.5 w-1.5 rounded-full bg-blue-900"></div>
+        </div>
+        <div class="flex items-center space-x-2 text-[11px]">
+          <i class="fa-solid fa-signal"></i>
+          <i class="fa-solid fa-wifi"></i>
+          <i class="fa-solid fa-battery-three-quarters"></i>
+        </div>
+      </div>
+
+      <!-- App Header Bar (Present on in-app screens) -->
+      <nav id="appHeader" class="w-full bg-uvic-blue text-white px-4 py-3 flex items-center justify-between shadow-sm z-20">
+        <div class="flex items-center space-x-2">
+          <button id="navBackBtn" onclick="navigatePrevious()" class="text-slate-300 hover:text-white p-1 transition-colors">
+            <i class="fa-solid fa-arrow-left text-sm"></i>
+          </button>
+          <span id="appHeaderTitle" class="font-bold text-base tracking-wide flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-uvic-gold inline-block"></span>
+            UVic Connect
+          </span>
+        </div>
+        <div class="flex items-center space-x-3 text-sm">
+          <button onclick="switchScreen('screen-notification')" title="Simulate Push Reminder" class="relative text-amber-300 hover:text-amber-200">
+            <i class="fa-regular fa-bell text-base"></i>
+            <span class="absolute -top-1 -right-1 w-2 h-2 bg-uvic-red rounded-full"></span>
+          </button>
+          <button onclick="switchScreen('screen-view-profile')" title="View My Profile" class="w-7 h-7 rounded-full bg-slate-200 text-uvic-blue flex items-center justify-center font-bold text-xs border border-white hover:bg-amber-100 transition-colors">
+            <i class="fa-solid fa-user"></i>
+          </button>
+        </div>
+      </nav>
+
+      <!-- App Screen Canvas Container -->
+      <div id="screenContainer" class="flex-1 overflow-y-auto bg-slate-50 flex flex-col relative">
+
+        <!-- ============================================== -->
+        <!-- SCREEN 1: LOGIN -->
+        <!-- ============================================== -->
+        <section id="screen-login" class="screen-view p-6 flex flex-col justify-center flex-1 slide-enter">
+          <div class="text-center mb-8">
+            <div class="w-16 h-16 rounded-2xl bg-uvic-blue text-white mx-auto flex items-center justify-center text-2xl font-bold shadow-md mb-3">
+              <i class="fa-solid fa-users-viewfinder"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-uvic-blue">Log in</h2>
+            <p class="text-xs text-slate-500 mt-1">Sign in with your University of Victoria V-Number or username</p>
+          </div>
+
+          <div class="space-y-4 max-w-sm mx-auto w-full">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Username / UVic ID</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                  <i class="fa-regular fa-user"></i>
+                </span>
+                <input id="loginUsername" type="text" placeholder="Enter username" 
+                  class="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-uvic-blue focus:border-transparent transition-all">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Password</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                  <i class="fa-solid fa-lock"></i>
+                </span>
+                <input id="loginPassword" type="password" placeholder="Enter password" 
+                  class="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-uvic-blue focus:border-transparent transition-all">
+              </div>
+            </div>
+
+            <div class="pt-2">
+              <button onclick="handleLogin()" 
+                class="w-full py-3 px-4 bg-uvic-blue hover:bg-sky-900 text-white font-semibold rounded-xl text-sm shadow-md transition-all active:scale-[0.99] flex items-center justify-center gap-2">
+                <span>Log in</span>
+                <i class="fa-solid fa-arrow-right text-xs"></i>
+              </button>
+            </div>
+
+            <div class="text-center">
+              <button type="button" class="text-xs text-slate-500 hover:text-uvic-blue font-medium underline">
+                Forgot password?
+              </button>
+            </div>
+
+            <div class="relative my-6 text-center">
+              <hr class="border-slate-200">
+              <span class="absolute left-1/2 -top-2.5 -translate-x-1/2 bg-slate-50 px-3 text-xs text-slate-400 font-medium">OR</span>
+            </div>
+
+            <div>
+              <button onclick="startCreateProfileFlow()" 
+                class="w-full py-2.5 px-4 bg-white border-2 border-uvic-blue text-uvic-blue font-semibold rounded-xl text-sm hover:bg-blue-50 transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-user-plus text-xs"></i>
+                <span>Create new account</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- SCREEN 2: READ-ONLY MY PROFILE -->
+        <!-- ============================================== -->
+        <section id="screen-view-profile" class="screen-view p-4 flex flex-col flex-1 hidden slide-enter">
+          <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex-1 flex flex-col justify-between">
+            <div class="space-y-4">
+              <!-- Header & Avatar -->
+              <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center space-x-3">
+                  <div class="w-14 h-14 rounded-full bg-uvic-blue text-white flex items-center justify-center text-xl font-bold shadow">
+                    <span id="viewProfileInitials">CV</span>
+                  </div>
+                  <div>
+                    <h2 id="viewProfileName" class="text-lg font-bold text-slate-900">Cristian V.</h2>
+                    <p id="viewProfileDept" class="text-xs text-slate-500 font-medium">Engineering and Computer Science</p>
+                    <span class="inline-block mt-1 text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">
+                      <i class="fa-solid fa-graduation-cap mr-1"></i>UVic Student
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Courses Section -->
+              <div>
+                <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <i class="fa-solid fa-book text-uvic-blue"></i> Enrolled Courses
+                </h4>
+                <div id="viewProfileCourses" class="flex flex-wrap gap-1.5">
+                  <span class="px-2.5 py-1 bg-slate-100 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700">CSC 230</span>
+                  <span class="px-2.5 py-1 bg-slate-100 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700">CSC 225</span>
+                  <span class="px-2.5 py-1 bg-slate-100 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700">STAT 260</span>
+                  <span class="px-2.5 py-1 bg-slate-100 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700">MATH 211</span>
+                </div>
+              </div>
+
+              <!-- Joined Clubs Section -->
+              <div>
+                <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <i class="fa-solid fa-users text-purple-600"></i> Joined Clubs
+                </h4>
+                <div id="viewProfileClubs" class="flex flex-wrap gap-1.5">
+                  <!-- Dynamically rendered -->
+                </div>
+              </div>
+
+              <!-- Interests Section -->
+              <div>
+                <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <i class="fa-solid fa-heart text-uvic-red"></i> Selected Interests
+                </h4>
+                <div id="viewProfileInterests" class="flex flex-wrap gap-1.5">
+                  <!-- Injected via JS -->
+                </div>
+              </div>
+
+              <!-- About Me Bio -->
+              <div>
+                <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <i class="fa-solid fa-quote-left text-uvic-gold"></i> About Me
+                </h4>
+                <div id="viewProfileBio" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 leading-relaxed italic">
+                  <!-- Injected via JS -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Button: Edit Profile -->
+            <div class="pt-3 border-t border-slate-200 mt-4">
+              <button onclick="startEditProfileFlow()" 
+                class="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm shadow-sm flex items-center justify-center gap-2 border border-slate-300 transition-colors">
+                <i class="fa-solid fa-pen text-xs"></i>
+                <span>EDIT PROFILE</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- SCREEN 2.5: OTHER PROFILE -->
+        <!-- ============================================== -->
+        <section id="screen-other-profile" class="screen-view p-4 flex flex-col flex-1 hidden slide-enter">
+          <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex-1 flex flex-col justify-between">
+            <div class="space-y-4">
+              <!-- Header & Avatar -->
+              <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center space-x-3">
+                  <div class="w-14 h-14 rounded-full bg-uvic-blue text-white flex items-center justify-center text-xl font-bold shadow">
+                    <span id="otherProfileInitials">U</span>
+                  </div>
+                  <div>
+                    <h2 id="otherProfileName" class="text-lg font-bold text-slate-900">User Name</h2>
+                    <p id="otherProfileDept" class="text-xs text-slate-500 font-medium">Department</p>
+                    <span class="inline-block mt-1 text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">
+                      <i class="fa-solid fa-graduation-cap mr-1"></i>UVic Student
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Courses Section -->
+              <div>
+                <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <i class="fa-solid fa-book text-uvic-blue"></i> Enrolled Courses
+                </h4>
+                <div id="otherProfileCourses" class="flex flex-wrap gap-1.5">
+                  <!-- Dynamically rendered -->
+                </div>
+              </div>
+
+              <!-- Joined Clubs Section -->
+              <div>
+                <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <i class="fa-solid fa-users text-purple-600"></i> Joined Clubs
+                </h4>
+                <div id="otherProfileClubs" class="flex flex-wrap gap-1.5">
+                  <!-- Dynamically rendered -->
+                </div>
+              </div>
+
+              <!-- Interests Section -->
+              <div>
+                <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <i class="fa-solid fa-heart text-uvic-red"></i> Selected Interests
+                </h4>
+                <div id="otherProfileInterests" class="flex flex-wrap gap-1.5">
+                  <!-- Injected via JS -->
+                </div>
+              </div>
+
+              <!-- About Me Bio -->
+              <div>
+                <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <i class="fa-solid fa-quote-left text-uvic-gold"></i> About Me
+                </h4>
+                <div id="otherProfileBio" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 leading-relaxed italic">
+                  <!-- Injected via JS -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Button: Connect -->
+            <div class="pt-3 border-t border-slate-200 mt-4">
+              <button id="otherProfileConnectBtn" 
+                class="w-full py-2.5 px-4 bg-uvic-blue hover:bg-slate-900 text-white font-bold rounded-xl text-sm shadow-md flex items-center justify-center gap-2 transition-all">
+                <i class="fa-solid fa-user-plus text-xs"></i>
+                <span>CONNECT</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- SCREEN 3: EDIT / CREATE PROFILE (Step 1) -->
+        <!-- ============================================== -->
+        <section id="screen-new-profile" class="screen-view p-5 flex flex-col flex-1 hidden slide-enter">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
+            <div>
+              <h2 id="profileFormHeaderTitle" class="text-lg font-bold text-slate-800">CREATE PROFILE</h2>
+              <p id="profileFormSubtitle" class="text-xs text-slate-500">Step 1 of 2: Tell other students about yourself</p>
+            </div>
+            <span class="text-xs bg-uvic-blue/10 text-uvic-blue font-semibold px-2 py-1 rounded-md">UVic Student</span>
+          </div>
+
+          <div class="space-y-3.5 flex-1 overflow-y-auto pr-0.5">
+            <!-- Name Input -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Full Name or Preferred Name</label>
+              <div class="relative flex items-center">
+                <div class="w-9 h-9 rounded-full bg-slate-200 border border-slate-300 text-slate-600 flex items-center justify-center mr-2 text-sm flex-shrink-0">
+                  <i class="fa-regular fa-user"></i>
+                </div>
+                <input id="profileNameInput" type="text" value="Cristian" 
+                  class="flex-1 px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-uvic-blue focus:outline-none">
+              </div>
+            </div>
+
+            <!-- Department dropdown -->
+            <div class="relative">
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Department / Faculty</label>
+              <button id="deptDropdownTrigger" type="button" onclick="toggleDeptDropdown()" 
+                class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-left font-medium text-slate-800 flex items-center justify-between shadow-sm">
+                <span id="selectedDeptText">Engineering and Computer Science</span>
+                <i id="deptDropdownChevron" class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform"></i>
+              </button>
+
+              <div id="deptDropdownMenu" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-300 rounded-xl shadow-xl z-30 max-h-48 overflow-y-auto divide-y divide-slate-100">
+                <div class="p-1">
+                  <div onclick="selectDepartment('Math and Stats')" class="p-2.5 hover:bg-slate-100 rounded-lg text-xs font-medium cursor-pointer flex justify-between items-center">
+                    <span>Math and Stats</span>
+                  </div>
+                  <div onclick="selectDepartment('Engineering and Computer Science')" class="p-2.5 bg-blue-50 text-uvic-blue rounded-lg text-xs font-semibold cursor-pointer flex justify-between items-center">
+                    <span>Engineering and Computer Science</span>
+                    <i class="fa-solid fa-check text-xs"></i>
+                  </div>
+                  <div onclick="selectDepartment('Linguistics')" class="p-2.5 hover:bg-slate-100 rounded-lg text-xs font-medium cursor-pointer">
+                    <span>Linguistics</span>
+                  </div>
+                  <div onclick="selectDepartment('Humanities and Social Sciences')" class="p-2.5 hover:bg-slate-100 rounded-lg text-xs font-medium cursor-pointer">
+                    <span>Humanities and Social Sciences</span>
+                  </div>
+                  <div onclick="selectDepartment('Arts')" class="p-2.5 hover:bg-slate-100 rounded-lg text-xs font-medium cursor-pointer">
+                    <span>Arts</span>
+                  </div>
+                  <div onclick="selectDepartment('Gustavson School of Business')" class="p-2.5 hover:bg-slate-100 rounded-lg text-xs font-medium cursor-pointer">
+                    <span>Gustavson School of Business</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Courses Field -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Courses Currently Enrolled In</label>
+              <input id="coursesInput" type="text" value="CSC 230, CSC 225, STAT 260, MATH 211" 
+                class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-700 focus:ring-2 focus:ring-uvic-blue focus:outline-none">
+              <span class="text-[10px] text-slate-400 mt-0.5 block">Helps classmates find you for study groups & clubs</span>
+            </div>
+
+            <!-- Interests Multi-select Chips -->
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <label class="text-xs font-semibold text-slate-700">Interests & Hobbies <span class="font-normal text-slate-400">(Tap to select)</span></label>
+                <span id="selectedCountBadge" class="text-[10px] font-semibold text-uvic-blue bg-blue-50 px-2 py-0.5 rounded-full">4 selected</span>
+              </div>
+              <div class="p-2.5 bg-white border border-slate-300 rounded-xl max-h-32 overflow-y-auto flex flex-wrap gap-1.5 shadow-inner" id="interestsContainer">
+              </div>
+            </div>
+
+            <!-- About Me Bio -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">About Me</label>
+              <textarea id="aboutMeInput" rows="2" 
+                class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 font-medium focus:ring-2 focus:ring-uvic-blue focus:outline-none resize-none">Hi, I'm an exchange student from Chile looking to meet new people!</textarea>
+            </div>
+          </div>
+
+          <!-- Bottom Action -->
+          <div class="pt-3 border-t border-slate-200 mt-2">
+            <button onclick="goToProfileStep2()" 
+              class="w-full py-3 px-4 bg-uvic-blue hover:bg-slate-900 text-white font-bold rounded-xl text-sm shadow-md flex items-center justify-center gap-2 uppercase tracking-wider">
+              <span>CONTINUE TO STEP 2</span>
+              <i class="fa-solid fa-arrow-right text-xs"></i>
+            </button>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- SCREEN 3.5: PROFILE SETUP (Step 2 of 2) -->
+        <!-- ============================================== -->
+        <section id="screen-profile-step2" class="screen-view p-5 flex flex-col flex-1 hidden slide-enter">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
+            <div>
+              <h2 id="step2HeaderTitle" class="text-lg font-bold text-slate-800">MEETUP PREFERENCES</h2>
+              <p class="text-xs text-slate-500">Step 2 of 2: How & when do you prefer to connect?</p>
+            </div>
+            <span class="text-xs bg-emerald-100 text-emerald-800 font-semibold px-2 py-1 rounded-md">Preferences</span>
+          </div>
+
+          <div class="space-y-4 flex-1">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">Study & Connection Style</label>
+              <div class="space-y-2">
+                <label class="flex items-center p-2.5 bg-white border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50">
+                  <input type="radio" name="meetupStyle" checked class="text-uvic-blue focus:ring-0 mr-2.5">
+                  <span class="text-xs text-slate-700 font-medium">In-person on campus (Library, SUB, Cafes)</span>
+                </label>
+                <label class="flex items-center p-2.5 bg-white border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50">
+                  <input type="radio" name="meetupStyle" class="text-uvic-blue focus:ring-0 mr-2.5">
+                  <span class="text-xs text-slate-700 font-medium">Outdoor / Recreational meetups around Victoria</span>
+                </label>
+                <label class="flex items-center p-2.5 bg-white border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50">
+                  <input type="radio" name="meetupStyle" class="text-uvic-blue focus:ring-0 mr-2.5">
+                  <span class="text-xs text-slate-700 font-medium">Virtual / Discord study rooms first</span>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">Weekly Availability</label>
+              <div class="grid grid-cols-2 gap-2 text-xs">
+                <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg">
+                  <input type="checkbox" checked class="text-uvic-blue rounded mr-2">
+                  <span>Weekday afternoons</span>
+                </label>
+                <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg">
+                  <input type="checkbox" checked class="text-uvic-blue rounded mr-2">
+                  <span>Weekends</span>
+                </label>
+                <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg">
+                  <input type="checkbox" class="text-uvic-blue rounded mr-2">
+                  <span>Evenings</span>
+                </label>
+                <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg">
+                  <input type="checkbox" class="text-uvic-blue rounded mr-2">
+                  <span>Mornings</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 flex items-start gap-2">
+              <i class="fa-solid fa-shield-halved text-uvic-gold text-sm mt-0.5"></i>
+              <span>Your privacy is protected: details are only visible to verified UVic students.</span>
+            </div>
+          </div>
+
+          <!-- Final Submit -->
+          <div class="pt-3 border-t border-slate-200 mt-2">
+            <button id="profileStep2SubmitBtn" onclick="saveProfileAndFinish()" 
+              class="w-full py-3 px-4 bg-uvic-blue hover:bg-slate-900 text-white font-bold rounded-xl text-sm shadow-md flex items-center justify-center gap-2 uppercase tracking-wider">
+              <span id="profileSubmitBtnText">CREATE PROFILE</span>
+              <i class="fa-solid fa-check text-xs"></i>
+            </button>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- SCREEN 3.75: SUGGESTED CLUBS -->
+        <!-- ============================================== -->
+        <section id="screen-suggested-clubs" class="screen-view p-5 flex flex-col flex-1 hidden slide-enter bg-slate-50">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
+            <div>
+              <h2 class="text-lg font-bold text-slate-800">RECOMMENDED CLUBS</h2>
+              <p class="text-xs text-slate-500">Based on your selected interests</p>
+            </div>
+            <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+              <i class="fa-solid fa-star text-uvic-gold text-sm"></i>
+            </div>
+          </div>
+
+          <div id="suggestedClubsContainer" class="space-y-2.5 flex-1 overflow-y-auto pr-0.5 pb-4">
+            <!-- Clubs injected here -->
+          </div>
+
+          <!-- Bottom Action -->
+          <div class="pt-3 border-t border-slate-200 mt-2">
+            <button onclick="switchScreen('screen-view-profile')" 
+              class="w-full py-3 px-4 bg-uvic-blue hover:bg-slate-900 text-white font-bold rounded-xl text-sm shadow-md flex items-center justify-center gap-2 uppercase tracking-wider">
+              <span>FINISH SETUP</span>
+              <i class="fa-solid fa-arrow-right text-xs"></i>
+            </button>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- SCREEN 4: UPCOMING EVENTS -->
+        <!-- ============================================== -->
+        <section id="screen-events-list" class="screen-view flex flex-col flex-1 hidden slide-enter">
+          
+          <div class="bg-white px-4 pt-3 pb-2 border-b border-slate-200 shadow-sm sticky top-0 z-10 flex items-center justify-between">
+            <div>
+              <h2 class="text-sm font-bold tracking-wider text-slate-800 uppercase">UPCOMING EVENTS</h2>
+              <p class="text-[11px] text-slate-500 font-medium">Find campus events & see who is going</p>
+            </div>
+            <span class="text-[10px] bg-blue-50 text-uvic-blue font-semibold px-2 py-0.5 rounded-full border border-blue-100">Fall Term</span>
+          </div>
+
+          <!-- Events Feed List -->
+          <div class="p-3 space-y-3 flex-1 overflow-y-auto">
+            
+            <!-- Event 1: 8/30 International Student Welcome -->
+            <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm hover:border-blue-300 transition-all">
+              <div class="flex items-start justify-between cursor-pointer" onclick="openEventDetails('welcome')">
+                <div class="flex items-start gap-3">
+                  <div class="w-12 h-12 rounded-xl bg-blue-50 text-uvic-blue border border-blue-100 flex flex-col items-center justify-center flex-shrink-0">
+                    <span class="text-[10px] uppercase font-bold text-slate-500">Aug</span>
+                    <span class="text-base font-bold leading-none">30</span>
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-sm text-slate-900 leading-snug hover:text-uvic-blue">International Student Welcome</h3>
+                    <p class="text-[11px] text-slate-500 mt-0.5">UVic Student Union Building &bull; 10:30am</p>
+                    <div class="flex items-center gap-1.5 mt-1.5 text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full w-max">
+                      <i class="fa-solid fa-users text-[9px]"></i>
+                      <span>4 classmates going</span>
+                    </div>
+                  </div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-slate-300 text-xs mt-1"></i>
+              </div>
+
+              <!-- Interaction Row -->
+              <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+                <label class="flex items-center space-x-2 cursor-pointer font-medium text-slate-700">
+                  <input type="checkbox" id="going-welcome" checked onchange="handleGoingChange('welcome', this.checked)" class="w-4 h-4 rounded text-uvic-blue focus:ring-0">
+                  <span>I'm going</span>
+                </label>
+
+                <button id="list-reminder-welcome" onclick="toggleSyncReminder('welcome', 'International Student Welcome', 'Aug 30, 10:30am')" class="text-slate-600 hover:text-uvic-gold font-medium flex items-center space-x-1 py-1 px-2 rounded-lg hover:bg-slate-50 transition-colors">
+                  <i class="fa-regular fa-bell text-xs text-slate-400"></i>
+                  <span>Set Reminder</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Event 2: 9/29 Global Community Hike -->
+            <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm hover:border-blue-300 transition-all">
+              <div class="flex items-start justify-between cursor-pointer" onclick="openHikePeersScreen()">
+                <div class="flex items-start gap-3">
+                  <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-100 flex flex-col items-center justify-center flex-shrink-0">
+                    <span class="text-[10px] uppercase font-bold text-emerald-600">Sep</span>
+                    <span class="text-base font-bold leading-none">29</span>
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-1.5">
+                      <h3 class="font-bold text-sm text-slate-900 leading-snug hover:text-uvic-blue">Global Community Hike</h3>
+                      <span class="bg-amber-100 text-amber-800 text-[9px] font-bold px-1.5 py-0.2 rounded">Today</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Mount Tolmie Trailhead &bull; 4:30pm</p>
+                    <div class="flex items-center gap-1.5 mt-1.5 text-[11px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full w-max">
+                      <i class="fa-solid fa-person-hiking text-[10px]"></i>
+                      <span>4 peers looking to connect</span>
+                    </div>
+                  </div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-slate-300 text-xs mt-1"></i>
+              </div>
+
+              <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+                <label class="flex items-center space-x-2 cursor-pointer font-medium text-slate-700">
+                  <input type="checkbox" id="going-hike" checked onchange="handleGoingChange('hike', this.checked)" class="w-4 h-4 rounded text-uvic-blue focus:ring-0">
+                  <span>I'm going</span>
+                </label>
+
+                <button onclick="triggerReminderModal('Global Community Hike', 'Today at 4:30pm')" class="text-slate-600 hover:text-uvic-gold font-medium flex items-center space-x-1 py-1 px-2 rounded-lg bg-amber-50 text-amber-900">
+                  <i class="fa-solid fa-bell text-xs text-amber-600"></i>
+                  <span>Active Reminder</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Event 3: 10/21 Co-op and Career Networking Evening -->
+            <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm opacity-90">
+              <div class="flex items-start justify-between">
+                <div class="flex items-start gap-3">
+                  <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-800 border border-purple-100 flex flex-col items-center justify-center flex-shrink-0">
+                    <span class="text-[10px] uppercase font-bold text-purple-600">Oct</span>
+                    <span class="text-base font-bold leading-none">21</span>
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-sm text-slate-900 leading-snug">Co-op & Career Networking Evening</h3>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Engineering Lab Wing (ELW) &bull; 6:00pm</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+                <label class="flex items-center space-x-2 cursor-pointer font-medium text-slate-700">
+                  <input type="checkbox" id="going-coop" class="w-4 h-4 rounded text-uvic-blue focus:ring-0">
+                  <span>I'm going</span>
+                </label>
+
+                <button onclick="toggleEventReminder('Co-op and Career Networking', 'Oct 21, 6:00pm')" class="text-slate-600 hover:text-uvic-gold font-medium flex items-center space-x-1 py-1 px-2 rounded-lg hover:bg-slate-50 transition-colors">
+                  <i class="fa-regular fa-bell text-xs text-slate-400"></i>
+                  <span>Set Reminder</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Event 4: 10/22 Global Community Fall Social -->
+            <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm opacity-90">
+              <div class="flex items-start justify-between">
+                <div class="flex items-start gap-3">
+                  <div class="w-12 h-12 rounded-xl bg-orange-50 text-orange-800 border border-orange-100 flex flex-col items-center justify-center flex-shrink-0">
+                    <span class="text-[10px] uppercase font-bold text-orange-600">Oct</span>
+                    <span class="text-base font-bold leading-none">22</span>
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-sm text-slate-900 leading-snug">Global Community Fall Social</h3>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Cove Dining Commons &bull; 5:00pm</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+                <label class="flex items-center space-x-2 cursor-pointer font-medium text-slate-700">
+                  <input type="checkbox" id="going-social" class="w-4 h-4 rounded text-uvic-blue">
+                  <span>I'm going</span>
+                </label>
+
+                <button onclick="toggleEventReminder('Global Community Fall Social', 'Oct 22, 5:00pm')" class="text-slate-600 hover:text-uvic-gold font-medium flex items-center space-x-1 py-1 px-2 rounded-lg hover:bg-slate-50 transition-colors">
+                  <i class="fa-regular fa-bell text-xs text-slate-400"></i>
+                  <span>Set Reminder</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- SCREEN 4.5: DISCUSSIONS -->
+        <!-- ============================================== -->
+        <section id="screen-discussion" class="screen-view flex flex-col flex-1 hidden slide-enter">
+          
+          <div class="bg-white px-4 pt-3 pb-2 border-b border-slate-200 shadow-sm sticky top-0 z-10 flex items-center justify-between">
+            <div>
+              <h2 class="text-sm font-bold tracking-wider text-slate-800 uppercase">COMMUNITY FORUMS</h2>
+              <p class="text-[11px] text-slate-500 font-medium">Join conversations by class or club</p>
+            </div>
+            <span class="text-[11px] bg-purple-50 text-purple-700 font-bold px-2 py-0.5 rounded-full">Active Rooms</span>
+          </div>
+
+          <!-- Discussions List -->
+          <div class="p-3 space-y-5 flex-1 overflow-y-auto bg-slate-50/50 pb-8">
+            
+            <!-- My Classes -->
+            <div>
+              <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 px-1 flex items-center gap-1.5">
+                <i class="fa-solid fa-graduation-cap"></i> My Classes
+              </h3>
+              <div id="discussionsClassesList" class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden divide-y divide-slate-100">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+
+            <!-- Clubs -->
+            <div>
+              <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 px-1 flex items-center gap-1.5">
+                <i class="fa-solid fa-tent"></i> Clubs & Groups
+              </h3>
+              <div id="discussionsClubsList" class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden divide-y divide-slate-100">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+
+            <!-- Majors -->
+            <div>
+              <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 px-1 flex items-center gap-1.5">
+                <i class="fa-solid fa-book-open"></i> My Major
+              </h3>
+              <div id="discussionsMajorList" class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden divide-y divide-slate-100">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- SCREEN 4.7: CHAT INTERFACE -->
+        <!-- ============================================== -->
+        <section id="screen-chat" class="screen-view flex flex-col flex-1 hidden slide-enter bg-slate-50 relative">
+          <div id="chatMessageContainer" class="flex-1 overflow-y-auto p-4 space-y-3 pb-20">
+            <!-- Messages injected here by JS -->
+          </div>
+
+          <!-- Chat Input Area -->
+          <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-3 flex items-center gap-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+            <button class="text-slate-400 hover:text-uvic-blue p-2 rounded-full transition-colors"><i class="fa-solid fa-circle-plus text-lg"></i></button>
+            <input id="chatInputField" type="text" placeholder="Type a message..." 
+              class="flex-1 bg-slate-100 border border-transparent focus:bg-white focus:border-uvic-blue focus:ring-1 focus:ring-uvic-blue rounded-full px-4 py-2 text-sm transition-all" 
+              onkeypress="handleChatKeyPress(event)">
+            <button onclick="sendChatMessage()" class="w-9 h-9 bg-uvic-blue text-white rounded-full flex items-center justify-center hover:bg-slate-900 transition-colors shadow-sm flex-shrink-0">
+              <i class="fa-solid fa-paper-plane text-xs -ml-0.5"></i>
+            </button>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- SCREEN 5: EVENT DETAILS -->
+        <!-- ============================================== -->
+        <section id="screen-event-details" class="screen-view p-4 flex flex-col flex-1 hidden slide-enter">
+          <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3.5 flex-1 overflow-y-auto">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-uvic-gold bg-amber-50 px-2 py-0.5 rounded">Orientation & Culture</span>
+              <h2 class="text-xl font-bold text-slate-900 mt-1 leading-snug">International Student Welcome</h2>
+            </div>
+
+            <!-- Date & Time Tags -->
+            <div class="space-y-1.5 text-xs font-semibold text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+              <div class="flex items-center gap-2">
+                <i class="fa-regular fa-calendar-days text-uvic-blue text-sm w-4 text-center"></i>
+                <span>Wednesday, August 30th</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i class="fa-regular fa-clock text-uvic-blue text-sm w-4 text-center"></i>
+                <span>10:30 - 1:30 pm</span>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div>
+              <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wide mb-1">Description of Event</h4>
+              <p class="text-xs text-slate-600 leading-relaxed bg-slate-50/50 p-2.5 rounded-xl border border-slate-100">
+                If you're new to Canada, join us at the International Student Welcome to learn about settling into life at UVic, finding friends, joining campus clubs, and academic support.
+              </p>
+            </div>
+
+            <!-- Going & Set Reminder row -->
+            <div class="flex items-center justify-between py-2 border-y border-slate-100">
+              <label class="flex items-center space-x-2 font-semibold text-xs text-slate-800 cursor-pointer">
+                <input type="checkbox" id="details-going-welcome" onchange="handleGoingChange('welcome', this.checked)" checked class="w-4 h-4 rounded text-uvic-blue">
+                <span>I'm going</span>
+              </label>
+
+              <button id="details-reminder-welcome" onclick="toggleSyncReminder('welcome', 'International Student Welcome', 'Aug 30 at 10:30am')" class="flex items-center space-x-1.5 text-xs font-semibold text-slate-600 bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+                <i class="fa-regular fa-bell text-xs"></i>
+                <span>Set Reminder</span>
+              </button>
+            </div>
+
+            <!-- View Other Students Planning to Attend -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="text-xs font-bold text-slate-800">View other students planning to attend:</h4>
+                <span class="text-[10px] text-slate-400">4 confirmed</span>
+              </div>
+
+              <!-- Student Cards Grid -->
+              <div class="grid grid-cols-2 gap-2.5">
+                
+                <!-- Alice -->
+                <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex flex-col justify-between hover:border-slate-300 transition-all cursor-pointer" onclick="viewOtherProfile('alice')">
+                  <div class="flex items-center space-x-2 mb-1.5">
+                    <div class="w-7 h-7 rounded-full bg-pink-100 text-pink-700 flex items-center justify-center text-xs font-bold">
+                      A
+                    </div>
+                    <div>
+                      <p class="text-xs font-bold text-slate-800 leading-tight">Alice</p>
+                      <p class="text-[9px] text-slate-500">Psychology &bull; 1st Year</p>
+                    </div>
+                  </div>
+                  <p class="text-[10px] text-slate-500 italic line-clamp-2">"Loves hiking, indie music, and coffee strolls..."</p>
+                  <button onclick="event.stopPropagation(); handleConnect('alice', 'Alice')" class="connect-btn-alice mt-2 w-full py-1 bg-white border border-slate-300 hover:border-uvic-blue hover:text-uvic-blue rounded-lg text-[10px] font-semibold text-slate-700 flex items-center justify-center gap-1 transition-colors">
+                    <i class="fa-solid fa-user-plus text-[9px]"></i> Connect
+                  </button>
+                </div>
+
+                <!-- Charlie -->
+                <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex flex-col justify-between hover:border-slate-300 transition-all cursor-pointer" onclick="viewOtherProfile('charlie')">
+                  <div class="flex items-center space-x-2 mb-1.5">
+                    <div class="w-7 h-7 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">
+                      C
+                    </div>
+                    <div>
+                      <p class="text-xs font-bold text-slate-800 leading-tight">Charlie</p>
+                      <p class="text-[9px] text-slate-500">Computer Science</p>
+                    </div>
+                  </div>
+                  <p class="text-[10px] text-slate-500 italic line-clamp-2">"Taking CSC 225, looking for study partners!"</p>
+                  <button onclick="event.stopPropagation(); handleConnect('charlie', 'Charlie')" class="connect-btn-charlie mt-2 w-full py-1 bg-white border border-slate-300 hover:border-uvic-blue hover:text-uvic-blue rounded-lg text-[10px] font-semibold text-slate-700 flex items-center justify-center gap-1 transition-colors">
+                    <i class="fa-solid fa-user-plus text-[9px]"></i> Connect
+                  </button>
+                </div>
+
+                <!-- Bob -->
+                <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex flex-col justify-between hover:border-slate-300 transition-all cursor-pointer" onclick="viewOtherProfile('bob')">
+                  <div class="flex items-center space-x-2 mb-1.5">
+                    <div class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">
+                      B
+                    </div>
+                    <div>
+                      <p class="text-xs font-bold text-slate-800 leading-tight">Bob</p>
+                      <p class="text-[9px] text-slate-500">Engineering</p>
+                    </div>
+                  </div>
+                  <p class="text-[10px] text-slate-500 italic line-clamp-2">"Huge board gamer and outdoor explorer."</p>
+                  <button onclick="event.stopPropagation(); handleConnect('bob', 'Bob')" class="connect-btn-bob mt-2 w-full py-1 bg-white border border-slate-300 hover:border-uvic-blue hover:text-uvic-blue rounded-lg text-[10px] font-semibold text-slate-700 flex items-center justify-center gap-1 transition-colors">
+                    <i class="fa-solid fa-user-plus text-[9px]"></i> Connect
+                  </button>
+                </div>
+
+                <!-- Zack -->
+                <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex flex-col justify-between hover:border-slate-300 transition-all cursor-pointer" onclick="viewOtherProfile('zack')">
+                  <div class="flex items-center space-x-2 mb-1.5">
+                    <div class="w-7 h-7 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-bold">
+                      Z
+                    </div>
+                    <div>
+                      <p class="text-xs font-bold text-slate-800 leading-tight">Zack</p>
+                      <p class="text-[9px] text-slate-500">Business &bull; Exchange</p>
+                    </div>
+                  </div>
+                  <p class="text-[10px] text-slate-500 italic line-clamp-2">"New in Victoria, looking for gym buddies."</p>
+                  <button onclick="event.stopPropagation(); handleConnect('zack', 'Zack')" class="connect-btn-zack mt-2 w-full py-1 bg-white border border-slate-300 hover:border-uvic-blue hover:text-uvic-blue rounded-lg text-[10px] font-semibold text-slate-700 flex items-center justify-center gap-1 transition-colors">
+                    <i class="fa-solid fa-user-plus text-[9px]"></i> Connect
+                  </button>
+                </div>
+
+                <!-- Charlie -->
+                <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex flex-col justify-between hover:border-slate-300 transition-all cursor-pointer" onclick="viewOtherProfile('charlie')">
+                  <div class="flex items-center space-x-2 mb-1.5">
+                    <div class="w-7 h-7 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">
+                      C
+                    </div>
+                    <div>
+                      <p class="text-xs font-bold text-slate-800 leading-tight">Charlie</p>
+                      <p class="text-[9px] text-slate-500">Computer Science</p>
+                    </div>
+                  </div>
+                  <p class="text-[10px] text-slate-500 italic line-clamp-2">"Taking CSC 225, looking for study partners!"</p>
+                  <button onclick="event.stopPropagation(); sendDirectRequest('Charlie')" class="mt-2 w-full py-1 bg-white border border-slate-300 hover:border-uvic-blue hover:text-uvic-blue rounded-lg text-[10px] font-semibold text-slate-700 flex items-center justify-center gap-1 transition-colors">
+                    <i class="fa-solid fa-user-plus text-[9px]"></i> Connect
+                  </button>
+                </div>
+
+                <!-- Bob -->
+                <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex flex-col justify-between hover:border-slate-300 transition-all cursor-pointer" onclick="viewOtherProfile('bob')">
+                  <div class="flex items-center space-x-2 mb-1.5">
+                    <div class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">
+                      B
+                    </div>
+                    <div>
+                      <p class="text-xs font-bold text-slate-800 leading-tight">Bob</p>
+                      <p class="text-[9px] text-slate-500">Engineering</p>
+                    </div>
+                  </div>
+                  <p class="text-[10px] text-slate-500 italic line-clamp-2">"Huge board gamer and outdoor explorer."</p>
+                  <button onclick="event.stopPropagation(); sendDirectRequest('Bob')" class="mt-2 w-full py-1 bg-white border border-slate-300 hover:border-uvic-blue hover:text-uvic-blue rounded-lg text-[10px] font-semibold text-slate-700 flex items-center justify-center gap-1 transition-colors">
+                    <i class="fa-solid fa-user-plus text-[9px]"></i> Connect
+                  </button>
+                </div>
+
+                <!-- Zack -->
+                <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex flex-col justify-between hover:border-slate-300 transition-all cursor-pointer" onclick="viewOtherProfile('zack')">
+                  <div class="flex items-center space-x-2 mb-1.5">
+                    <div class="w-7 h-7 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-bold">
+                      Z
+                    </div>
+                    <div>
+                      <p class="text-xs font-bold text-slate-800 leading-tight">Zack</p>
+                      <p class="text-[9px] text-slate-500">Business &bull; Exchange</p>
+                    </div>
+                  </div>
+                  <p class="text-[10px] text-slate-500 italic line-clamp-2">"New in Victoria, looking for gym buddies."</p>
+                  <button onclick="event.stopPropagation(); sendDirectRequest('Zack')" class="mt-2 w-full py-1 bg-white border border-slate-300 hover:border-uvic-blue hover:text-uvic-blue rounded-lg text-[10px] font-semibold text-slate-700 flex items-center justify-center gap-1 transition-colors">
+                    <i class="fa-solid fa-user-plus text-[9px]"></i> Connect
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+            <button onclick="openHikePeersScreen()" class="w-full py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs flex items-center justify-center gap-2 transition-colors">
+              <span>View Global Community Hike Attendees</span>
+              <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </button>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- SCREEN 6: GENERAL FIND PEERS DIRECTORY -->
+        <!-- ============================================== -->
+        <section id="screen-peers-hub" class="screen-view p-4 flex flex-col flex-1 hidden slide-enter">
+          <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex-1 flex flex-col">
+            <div class="pb-3 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h2 class="text-base font-bold text-slate-900">Find Peers</h2>
+                <p class="text-xs text-slate-500">Discover students with matching classes & interests</p>
+              </div>
+              <span class="text-xs bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">12 Online</span>
+            </div>
+
+            <!-- Peer Category Filters -->
+            <div class="flex gap-1.5 my-3 overflow-x-auto pb-1 text-xs">
+              <button onclick="filterPeers('all')" id="peerFilter-all" class="px-2.5 py-1 bg-uvic-blue text-white rounded-lg font-medium shadow-sm flex-shrink-0">All Peers</button>
+              <button onclick="filterPeers('courses')" id="peerFilter-courses" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium flex-shrink-0">My Courses</button>
+              <button onclick="filterPeers('hike')" id="peerFilter-hike" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium flex-shrink-0">Hike Attendees</button>
+            </div>
+
+            <!-- Peer List Container -->
+            <div id="peersDirectoryList" class="grid grid-cols-2 gap-2.5 flex-1 overflow-y-auto content-start pr-0.5">
+              
+              <!-- Peer 1: Alice -->
+              <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex flex-col justify-between cursor-pointer hover:border-slate-300 transition-all" onclick="viewOtherProfile('alice')">
+                <div class="flex items-center space-x-2 mb-1">
+                  <div class="w-8 h-8 rounded-full bg-pink-100 text-pink-700 flex items-center justify-center text-xs font-bold">A</div>
+                  <div>
+                    <h4 class="font-bold text-xs text-slate-800">Alice</h4>
+                    <p class="text-[9px] text-slate-500">Psychology &bull; 1st Year</p>
+                  </div>
+                </div>
+                <p class="text-[10px] text-slate-500 mb-2 italic">Indie music, coffee, outdoors</p>
+                <button onclick="event.stopPropagation(); handleConnect('alice', 'Alice')" class="connect-btn-alice w-full py-1 bg-uvic-blue text-white rounded-lg text-[10px] font-semibold hover:bg-slate-900 transition-colors flex items-center justify-center">Connect</button>
+              </div>
+
+              <!-- Peer 2: Charlie -->
+              <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex flex-col justify-between cursor-pointer hover:border-slate-300 transition-all" onclick="viewOtherProfile('charlie')">
+                <div class="flex items-center space-x-2 mb-1">
+                  <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">C</div>
+                  <div>
+                    <h4 class="font-bold text-xs text-slate-800">Charlie</h4>
+                    <p class="text-[9px] text-slate-500">Comp Sci &bull; CSC 225</p>
+                  </div>
+                </div>
+                <p class="text-[10px] text-slate-500 mb-2 italic">Looking for study group!</p>
+                <button onclick="event.stopPropagation(); handleConnect('charlie', 'Charlie')" class="connect-btn-charlie w-full py-1 bg-uvic-blue text-white rounded-lg text-[10px] font-semibold hover:bg-slate-900 transition-colors flex items-center justify-center">Connect</button>
+              </div>
+
+              <!-- Peer 3: Bob -->
+              <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex flex-col justify-between cursor-pointer hover:border-slate-300 transition-all" onclick="viewOtherProfile('bob')">
+                <div class="flex items-center space-x-2 mb-1">
+                  <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">B</div>
+                  <div>
+                    <h4 class="font-bold text-xs text-slate-800">Bob</h4>
+                    <p class="text-[9px] text-slate-500">Engineering &bull; Hike</p>
+                  </div>
+                </div>
+                <p class="text-[10px] text-slate-500 mb-2 italic">Board games & hiking</p>
+                <button onclick="event.stopPropagation(); handleConnect('bob', 'Bob')" class="connect-btn-bob w-full py-1 bg-uvic-blue text-white rounded-lg text-[10px] font-semibold hover:bg-slate-900 transition-colors flex items-center justify-center">Connect</button>
+              </div>
+
+              <!-- Peer 4: Jack -->
+              <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex flex-col justify-between cursor-pointer hover:border-slate-300 transition-all" onclick="viewOtherProfile('jack')">
+                <div class="flex items-center space-x-2 mb-1">
+                  <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-xs font-bold">J</div>
+                  <div>
+                    <h4 class="font-bold text-xs text-slate-800">Jack</h4>
+                    <p class="text-[9px] text-slate-500">Geography &bull; Hike</p>
+                  </div>
+                </div>
+                <p class="text-[10px] text-slate-500 mb-2 italic">Trail leader, outdoors</p>
+                <button onclick="event.stopPropagation(); handleConnect('jack', 'Jack')" class="connect-btn-jack w-full py-1 bg-uvic-blue text-white rounded-lg text-[10px] font-semibold hover:bg-slate-900 transition-colors flex items-center justify-center">Connect</button>
+              </div>
+
+            </div>
+
+            <!-- Featured Event Card Shortcut -->
+            <div onclick="openHikePeersScreen()" class="mt-3 p-2.5 bg-emerald-50 rounded-xl border border-emerald-200 flex items-center justify-between cursor-pointer hover:bg-emerald-100/70 transition-colors">
+              <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-person-hiking text-emerald-700 text-sm"></i>
+                <div>
+                  <div class="text-xs font-bold text-emerald-900">Global Hike Event Group</div>
+                  <div class="text-[10px] text-emerald-700">4 peers going today at 4:30pm</div>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-right text-xs text-emerald-600"></i>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- SCREEN 6.5: SPECIFIC EVENT PEERS (Hike Event) -->
+        <!-- ============================================== -->
+        <section id="screen-peers-request" class="screen-view p-4 flex flex-col flex-1 hidden slide-enter">
+          <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex-1 flex flex-col">
+            <div class="text-center pb-3 border-b border-slate-100">
+              <span class="text-[10px] uppercase font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">Community Event</span>
+              <h2 class="text-lg font-bold text-slate-900 mt-1">Global Community Hike</h2>
+              <p class="text-xs text-slate-500 font-medium mt-0.5">Event Attendee Directory</p>
+            </div>
+
+            <!-- Student Peer Rows: Bob, Jack, Jill, Kate -->
+            <div class="grid grid-cols-2 gap-3 mt-4 flex-1 content-start">
+              
+              <!-- Peer 1: Bob -->
+              <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between items-center text-center cursor-pointer hover:border-slate-300 transition-all" onclick="viewOtherProfile('bob')">
+                <div class="w-10 h-10 rounded-full bg-blue-100 text-uvic-blue flex items-center justify-center text-sm mb-1 font-bold shadow-inner">
+                  <i class="fa-regular fa-user"></i>
+                </div>
+                <h4 class="font-bold text-xs text-slate-800">Bob</h4>
+                <p class="text-[9px] text-slate-500 mb-2">CS & Stats</p>
+                <button onclick="event.stopPropagation(); handleConnect('bob', 'Bob')" 
+                  class="connect-btn-bob w-full py-1.5 px-2 bg-uvic-blue hover:bg-slate-900 text-white font-semibold rounded-lg text-xs shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1">
+                  <i class="fa-solid fa-user-plus text-[10px]"></i>
+                  <span>Send Request</span>
+                </button>
+              </div>
+
+              <!-- Peer 2: Jack -->
+              <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between items-center text-center cursor-pointer hover:border-slate-300 transition-all" onclick="viewOtherProfile('jack')">
+                <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-sm mb-1 font-bold shadow-inner">
+                  <i class="fa-regular fa-user"></i>
+                </div>
+                <h4 class="font-bold text-xs text-slate-800">Jack</h4>
+                <p class="text-[9px] text-slate-500 mb-2">Geography</p>
+                <button onclick="event.stopPropagation(); handleConnect('jack', 'Jack')" 
+                  class="connect-btn-jack w-full py-1.5 px-2 bg-uvic-blue hover:bg-slate-900 text-white font-semibold rounded-lg text-xs shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1">
+                  <i class="fa-solid fa-user-plus text-[10px]"></i>
+                  <span>Send Request</span>
+                </button>
+              </div>
+
+              <!-- Peer 3: Jill -->
+              <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between items-center text-center cursor-pointer hover:border-slate-300 transition-all" onclick="viewOtherProfile('jill')">
+                <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-sm mb-1 font-bold shadow-inner">
+                  <i class="fa-regular fa-user"></i>
+                </div>
+                <h4 class="font-bold text-xs text-slate-800">Jill</h4>
+                <p class="text-[9px] text-slate-500 mb-2">Psychology</p>
+                <button onclick="event.stopPropagation(); handleConnect('jill', 'Jill')" 
+                  class="connect-btn-jill w-full py-1.5 px-2 bg-uvic-blue hover:bg-slate-900 text-white font-semibold rounded-lg text-xs shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1">
+                  <i class="fa-solid fa-user-plus text-[10px]"></i>
+                  <span>Send Request</span>
+                </button>
+              </div>
+
+              <!-- Peer 4: Kate -->
+              <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between items-center text-center cursor-pointer hover:border-slate-300 transition-all" onclick="viewOtherProfile('kate')">
+                <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-800 flex items-center justify-center text-sm mb-1 font-bold shadow-inner">
+                  <i class="fa-regular fa-user"></i>
+                </div>
+                <h4 class="font-bold text-xs text-slate-800">Kate</h4>
+                <p class="text-[9px] text-slate-500 mb-2">Linguistics</p>
+                <button onclick="event.stopPropagation(); handleConnect('kate', 'Kate')" 
+                  class="connect-btn-kate w-full py-1.5 px-2 bg-uvic-blue hover:bg-slate-900 text-white font-semibold rounded-lg text-xs shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1">
+                  <i class="fa-solid fa-user-plus text-[10px]"></i>
+                  <span>Send Request</span>
+                </button>
+              </div>
+
+            </div>
+
+            <!-- Meetup Info Box -->
+            <div class="mt-3 p-2.5 bg-blue-50/70 rounded-xl border border-blue-100 text-[11px] text-slate-600 flex items-start gap-2">
+              <i class="fa-solid fa-circle-info text-uvic-blue text-xs mt-0.5"></i>
+              <span>Once accepted, you can coordinate walking to the trailhead together from UVic bus loop.</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- SCREEN 7: SYSTEM REMINDER / LOCKSCREEN -->
+        <!-- ============================================== -->
+        <section id="screen-notification" class="screen-view p-6 flex flex-col justify-between flex-1 hidden slide-enter bg-gradient-to-b from-slate-900 via-slate-800 to-uvic-blue text-white">
+          
+          <div class="text-center pt-8">
+            <div class="text-5xl font-light tracking-tight" id="lockscreen-clock">8:00 <span class="text-2xl font-normal">am</span></div>
+            <div class="text-sm font-medium text-slate-300 mt-1">Tuesday, Sep 29</div>
+          </div>
+
+          <div class="my-auto">
+            <div class="bg-white/95 backdrop-blur-md text-slate-900 rounded-2xl p-4 shadow-2xl border border-white/20 transform transition-all hover:scale-[1.02]">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center space-x-2">
+                  <div class="w-6 h-6 rounded-lg bg-amber-500 text-white flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-bell"></i>
+                  </div>
+                  <span class="text-xs font-bold text-slate-800 tracking-wide uppercase">Reminder</span>
+                </div>
+                <span class="text-[10px] text-slate-400 font-medium">UVic Connect &bull; now</span>
+              </div>
+
+              <div class="pl-8">
+                <p class="text-sm font-bold text-slate-900 leading-snug">
+                  Global Community Hike is TODAY at 4:30pm!
+                </p>
+                <p class="text-xs text-slate-600 mt-1">
+                  Meet at UVic Transit Exchange or Mount Tolmie base. 4 friends you connected with are attending.
+                </p>
+              </div>
+
+              <div class="mt-3 pt-2.5 border-t border-slate-200/80 flex items-center justify-end space-x-2">
+                <button onclick="switchScreen('screen-events-list')" class="px-3 py-1 text-xs text-slate-500 font-semibold hover:text-slate-800">
+                  Dismiss
+                </button>
+                <button onclick="switchScreen('screen-peers-request')" class="px-3.5 py-1.5 bg-uvic-blue text-white rounded-lg text-xs font-bold shadow hover:bg-slate-900 flex items-center gap-1.5">
+                  <i class="fa-solid fa-users text-[10px]"></i>
+                  <span>View Hike Group</span>
+                </button>
+              </div>
+            </div>
+
+            <p class="text-center text-[11px] text-slate-400 mt-3 flex items-center justify-center gap-1">
+              <i class="fa-solid fa-fingerprint text-xs"></i> Tap notification to see who is going
+            </p>
+          </div>
+
+          <div class="text-center pb-2">
+            <button onclick="switchScreen('screen-events-list')" class="inline-flex items-center gap-1.5 px-4 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-xs font-medium backdrop-blur-sm transition-colors">
+              <i class="fa-solid fa-arrow-left text-[10px]"></i> Return to App
+            </button>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- In-App Bottom Navigation Bar -->
+      <nav id="bottomNav" class="w-full bg-white border-t border-slate-200 px-6 py-2 flex items-center justify-between text-xs text-slate-500 z-20">
+        <button id="nav-btn-events" onclick="switchScreen('screen-events-list')" class="flex flex-col items-center py-1 text-uvic-blue font-semibold">
+          <i class="fa-solid fa-calendar-days text-base mb-0.5"></i>
+          <span class="text-[10px]">Events</span>
+        </button>
+
+        <button id="nav-btn-discussions" onclick="switchScreen('screen-discussion')" class="flex flex-col items-center py-1 hover:text-uvic-blue">
+          <i class="fa-regular fa-comments text-base mb-0.5"></i>
+          <span class="text-[10px]">Discussions</span>
+        </button>
+
+        <button id="nav-btn-peers" onclick="switchScreen('screen-peers-hub')" class="flex flex-col items-center py-1 hover:text-uvic-blue">
+          <i class="fa-solid fa-user-group text-base mb-0.5"></i>
+          <span class="text-[10px]">Find Peers</span>
+        </button>
+
+        <button id="nav-btn-profile" onclick="switchScreen('screen-view-profile')" class="flex flex-col items-center py-1 hover:text-uvic-blue">
+          <i class="fa-regular fa-id-badge text-base mb-0.5"></i>
+          <span class="text-[10px]">My Profile</span>
+        </button>
+      </nav>
+
+      <!-- Interactive Toast / Feedback Notice -->
+      <div id="toastNotification" class="absolute top-16 left-4 right-4 bg-slate-900/95 text-white text-xs px-3.5 py-2.5 rounded-xl shadow-lg border border-white/10 flex items-center justify-between transition-all duration-300 opacity-0 pointer-events-none translate-y-[-10px] z-50">
+        <div class="flex items-center space-x-2">
+          <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+          <span id="toastMessage">Success</span>
+        </div>
+        <button onclick="hideToast()" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Presentation Controls & Flow Stepper for Usability Testing -->
+    <footer class="w-full mt-6 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+          <i class="fa-solid fa-sliders text-uvic-gold"></i> Prototype Flow Stepper
+        </span>
+        <span class="text-[11px] text-slate-500 font-medium">Click step to jump:</span>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 text-center text-xs">
+        <button onclick="switchScreen('screen-login')" class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 font-medium text-slate-700 transition-colors">
+          1. Login
+        </button>
+        <button onclick="switchScreen('screen-view-profile')" class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 font-medium text-slate-700 transition-colors">
+          2. My Profile
+        </button>
+        <button onclick="switchScreen('screen-events-list')" class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 font-medium text-slate-700 transition-colors">
+          3. Events List
+        </button>
+        <button onclick="switchScreen('screen-peers-hub')" class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 font-medium text-slate-700 transition-colors">
+          4. Find Peers
+        </button>
+        <button onclick="switchScreen('screen-discussion')" class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 font-medium text-slate-700 transition-colors col-span-2 sm:col-span-1">
+          5. Discussions
+        </button>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Prototype Logic & Data Binding -->
+  <script>
+    const availableInterests = [
+      "art", "sports", "sciences", "music", "law",
+      "outdoors", "gaming", "performance arts",
+      "board games", "programming", "politics",
+      "debate", "history", "engineering", "dance",
+      "math", "psychology", "animals", "movies"
+    ];
+
+    const selectedInterests = new Set(["sports", "outdoors", "programming", "movies"]);
+    const requestedConnections = new Set();
+    const joinedClubs = new Set(["UVic Outdoors Club", "Global Community"]);
+    let userCourses = ["CSC 230", "CSC 225", "STAT 260", "MATH 211"];
+    let userDept = "Engineering and Computer Science";
+
+    const clubInterestMapping = [
+      { name: "Game Dev Club", interests: ["programming", "gaming"] },
+      { name: "Board Game Club", interests: ["board games", "gaming"] },
+      { name: "Competitive Programming Club", interests: ["programming", "engineering", "math"] },
+      { name: "Movies Club", interests: ["movies", "art"] },
+      { name: "AI Club", interests: ["programming", "engineering", "math", "sciences"] },
+      { name: "Exercise Club", interests: ["sports", "outdoors"] },
+      { name: "Health Club", interests: ["sports", "psychology"] },
+      { name: "Meditation Club", interests: ["psychology"] },
+      { name: "Guitar Club", interests: ["music", "art", "performance arts"] },
+      { name: "Mental Health Awareness Club", interests: ["psychology"] },
+      { name: "Dance Club", interests: ["dance", "performance arts", "art"] },
+      { name: "Recycling Club", interests: ["outdoors", "sciences", "animals"] },
+      { name: "Canoe Club", interests: ["outdoors", "sports"] },
+      { name: "Debate Club", interests: ["debate", "politics", "law"] },
+      { name: "Chess Club", interests: ["board games", "math"] },
+      { name: "Wildlife Club", interests: ["animals", "outdoors", "sciences"] }
+    ];
+
+    let screenHistory = ['screen-login'];
+    let currentScreen = 'screen-login';
+    let isEditMode = false;
+    let currentViewedProfile = null;
+
+    function handleLogin() {
+      const usernameInput = document.getElementById('loginUsername').value;
+      const passwordInput = document.getElementById('loginPassword').value;
+      
+      if (usernameInput === 'cristian_v' && passwordInput === '1234') {
+        switchScreen('screen-events-list');
+      } else {
+        showToast('Invalid credentials. Please use cristian_v and 1234.');
+      }
+    }
+
+    function renderInterests() {
+      const container = document.getElementById('interestsContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      availableInterests.forEach(interest => {
+        const isSelected = selectedInterests.has(interest);
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = `px-2.5 py-1 rounded-md text-xs font-medium border transition-all ${
+          isSelected 
+            ? 'bg-slate-800 text-white border-slate-900 shadow-sm' 
+            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+        }`;
+        chip.textContent = interest;
+        chip.onclick = () => toggleInterest(interest);
+        container.appendChild(chip);
+      });
+
+      document.getElementById('selectedCountBadge').textContent = `${selectedInterests.size} selected`;
+    }
+
+    function toggleInterest(interest) {
+      if (selectedInterests.has(interest)) {
+        selectedInterests.delete(interest);
+      } else {
+        selectedInterests.add(interest);
+      }
+      renderInterests();
+    }
+
+    function toggleDeptDropdown() {
+      const menu = document.getElementById('deptDropdownMenu');
+      const chevron = document.getElementById('deptDropdownChevron');
+      const isHidden = menu.classList.contains('hidden');
+      
+      if (isHidden) {
+        menu.classList.remove('hidden');
+        chevron.classList.add('rotate-180');
+      } else {
+        menu.classList.add('hidden');
+        chevron.classList.remove('rotate-180');
+      }
+    }
+
+    function selectDepartment(deptName) {
+      document.getElementById('selectedDeptText').textContent = deptName;
+      toggleDeptDropdown();
+      showToast(`Department set to ${deptName}`);
+    }
+
+    // Profile creation vs editing flow management
+    function startCreateProfileFlow() {
+      isEditMode = false;
+      document.getElementById('profileFormHeaderTitle').textContent = "CREATE PROFILE";
+      document.getElementById('profileFormSubtitle').textContent = "Step 1 of 2: Tell other students about yourself";
+      document.getElementById('profileSubmitBtnText').textContent = "CREATE PROFILE";
+      
+      // Clear input fields for a new account
+      document.getElementById('profileNameInput').value = "";
+      document.getElementById('selectedDeptText').textContent = "Select Department";
+      document.getElementById('coursesInput').value = "";
+      document.getElementById('aboutMeInput').value = "";
+      selectedInterests.clear();
+      joinedClubs.clear();
+      userCourses = [];
+      userDept = "";
+      renderInterests();
+
+      switchScreen('screen-new-profile');
+    }
+
+    function startEditProfileFlow() {
+      isEditMode = true;
+      document.getElementById('profileFormHeaderTitle').textContent = "UPDATE PROFILE";
+      document.getElementById('profileFormSubtitle').textContent = "Edit your profile details & interests";
+      document.getElementById('profileSubmitBtnText').textContent = "UPDATE PROFILE";
+
+      // Populate input fields with current data for editing
+      document.getElementById('profileNameInput').value = document.getElementById('viewProfileName').textContent || "Cristian";
+      document.getElementById('selectedDeptText').textContent = userDept || "Engineering and Computer Science";
+      document.getElementById('coursesInput').value = userCourses.join(', ');
+      document.getElementById('aboutMeInput').value = document.getElementById('viewProfileBio').textContent.replace(/^"|"$/g, '') || "Hi, I'm an exchange student from Chile looking to meet new people!";
+      renderInterests();
+
+      switchScreen('screen-new-profile');
+    }
+
+    function goToProfileStep2() {
+      switchScreen('screen-profile-step2');
+    }
+
+    function saveProfileAndFinish() {
+      const name = document.getElementById('profileNameInput').value || 'Cristian';
+      userDept = document.getElementById('selectedDeptText').textContent;
+      const coursesStr = document.getElementById('coursesInput').value;
+      const bioStr = document.getElementById('aboutMeInput').value;
+
+      userCourses = coursesStr.split(',').map(c => c.trim()).filter(Boolean);
+
+      // Sync display view elements
+      document.getElementById('viewProfileName').textContent = name;
+      document.getElementById('viewProfileDept').textContent = userDept;
+      
+      const bioEl = document.getElementById('viewProfileBio');
+      if(bioEl) bioEl.textContent = `"${bioStr}"`;
+      
+      // Update initials avatar
+      const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'CV';
+      document.getElementById('viewProfileInitials').textContent = initials;
+
+      renderProfileView();
+      renderDiscussions();
+
+      if (isEditMode) {
+        showToast("Profile successfully updated!");
+        setTimeout(() => {
+          switchScreen('screen-view-profile');
+        }, 500);
+      } else {
+        showToast(`Account created for ${name}! Let's find some clubs.`);
+        setTimeout(() => {
+          showSuggestedClubs();
+        }, 500);
+      }
+    }
+
+    function renderProfileView() {
+      // Courses chips
+      const coursesContainer = document.getElementById('viewProfileCourses');
+      if (coursesContainer) {
+        coursesContainer.innerHTML = '';
+        if (userCourses.length === 0) {
+          coursesContainer.innerHTML = `<span class="text-xs text-slate-400 italic">No courses added</span>`;
+        } else {
+          userCourses.forEach(course => {
+            const badge = document.createElement('span');
+            badge.className = 'px-2.5 py-1 bg-slate-100 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700';
+            badge.textContent = course;
+            coursesContainer.appendChild(badge);
+          });
+        }
+      }
+
+      // Clubs chips
+      const clubsContainer = document.getElementById('viewProfileClubs');
+      if (clubsContainer) {
+        clubsContainer.innerHTML = '';
+        if (joinedClubs.size === 0) {
+          clubsContainer.innerHTML = `<span class="text-xs text-slate-400 italic">No clubs joined yet</span>`;
+        } else {
+          joinedClubs.forEach(club => {
+            const badge = document.createElement('span');
+            badge.className = 'px-2.5 py-1 bg-purple-100 text-purple-800 border border-purple-200 rounded-lg text-xs font-semibold flex items-center gap-1';
+            badge.innerHTML = `<i class="fa-solid fa-users text-[10px]"></i> ${club}`;
+            clubsContainer.appendChild(badge);
+          });
+        }
+      }
+
+      // Interests chips
+      const interestsContainer = document.getElementById('viewProfileInterests');
+      if (interestsContainer) {
+        interestsContainer.innerHTML = '';
+        if (selectedInterests.size === 0) {
+          interestsContainer.innerHTML = `<span class="text-xs text-slate-400 italic">No interests selected</span>`;
+        } else {
+          selectedInterests.forEach(interest => {
+            const badge = document.createElement('span');
+            badge.className = 'px-2.5 py-1 bg-slate-800 text-white rounded-md text-xs font-medium';
+            badge.textContent = interest;
+            interestsContainer.appendChild(badge);
+          });
+        }
+      }
+    }
+
+    function renderDiscussions() {
+      // 1. Classes List
+      const classesList = document.getElementById('discussionsClassesList');
+      if (classesList) {
+        classesList.innerHTML = '';
+        if (userCourses.length === 0) {
+          classesList.innerHTML = `<div class="p-3 text-xs text-slate-400 italic text-center">No enrolled courses</div>`;
+        } else {
+          userCourses.forEach(course => {
+            const lastMsg = mockChats[course] && mockChats[course].length > 0 
+              ? mockChats[course][mockChats[course].length - 1] 
+              : null;
+            const subtext = lastMsg 
+              ? `<span class="font-semibold text-slate-700">${lastMsg.sender}:</span> ${lastMsg.text}` 
+              : 'Class discussion room';
+
+            classesList.innerHTML += `
+              <div class="p-3 flex items-center justify-between hover:bg-slate-50 cursor-pointer transition-colors" onclick="openChat('${course}')">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-lg bg-blue-50 text-uvic-blue flex items-center justify-center text-xs border border-blue-100"><i class="fa-solid fa-laptop-code"></i></div>
+                  <div>
+                    <div class="font-bold text-sm text-slate-800">${course}</div>
+                    <div class="text-[10px] text-slate-500 truncate w-48">${subtext}</div>
+                  </div>
+                </div>
+                <div class="w-2 h-2 rounded-full bg-uvic-blue"></div>
+              </div>
+            `;
+          });
+        }
+      }
+
+      // 2. Clubs List
+      const clubsList = document.getElementById('discussionsClubsList');
+      if (clubsList) {
+        clubsList.innerHTML = '';
+        if (joinedClubs.size === 0) {
+          clubsList.innerHTML = `<div class="p-3 text-xs text-slate-400 italic text-center">No joined clubs</div>`;
+        } else {
+          joinedClubs.forEach(club => {
+            const lastMsg = mockChats[club] && mockChats[club].length > 0 
+              ? mockChats[club][mockChats[club].length - 1] 
+              : null;
+            const subtext = lastMsg 
+              ? `<span class="font-semibold text-slate-700">${lastMsg.sender}:</span> ${lastMsg.text}` 
+              : 'Club members chat';
+
+            clubsList.innerHTML += `
+              <div class="p-3 flex items-center justify-between hover:bg-slate-50 cursor-pointer transition-colors" onclick="openChat('${club.replace(/'/g, "\\'")}')">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center text-xs border border-amber-100"><i class="fa-solid fa-person-hiking"></i></div>
+                  <div>
+                    <div class="font-bold text-sm text-slate-800">${club}</div>
+                    <div class="text-[10px] text-slate-500 truncate w-48">${subtext}</div>
+                  </div>
+                </div>
+                <div class="w-2 h-2 rounded-full bg-uvic-blue"></div>
+              </div>
+            `;
+          });
+        }
+      }
+
+      // 3. Major List
+      const majorList = document.getElementById('discussionsMajorList');
+      if (majorList) {
+        majorList.innerHTML = '';
+        if (!userDept || userDept === 'Select Department') {
+          majorList.innerHTML = `<div class="p-3 text-xs text-slate-400 italic text-center">No major specified</div>`;
+        } else {
+          majorList.innerHTML = `
+            <div class="p-3 flex items-center justify-between hover:bg-slate-50 cursor-pointer transition-colors" onclick="openChat('${userDept.replace(/'/g, "\\'")}')">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-xs border border-slate-200"><i class="fa-solid fa-microchip"></i></div>
+                <div>
+                  <div class="font-bold text-sm text-slate-800">${userDept}</div>
+                  <div class="text-[10px] text-slate-500 truncate w-48">General discussion for ${userDept}</div>
+                </div>
+              </div>
+              <div class="w-2 h-2 rounded-full bg-uvic-blue"></div>
+            </div>
+          `;
+        }
+      }
+    }
+
+    function toggleJoinClub(clubName, buttonEl) {
+      if (joinedClubs.has(clubName)) {
+        joinedClubs.delete(clubName);
+        if (buttonEl) {
+          buttonEl.innerHTML = 'Join';
+          buttonEl.className = 'px-3 py-1.5 bg-uvic-blue text-white rounded-lg text-xs font-bold shadow-sm hover:bg-slate-900 transition-colors flex items-center';
+        }
+        showToast(`Left ${clubName}`);
+      } else {
+        joinedClubs.add(clubName);
+        if (buttonEl) {
+          buttonEl.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Joined';
+          buttonEl.className = 'px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold shadow-sm hover:bg-emerald-700 transition-colors flex items-center';
+        }
+        showToast(`Joined ${clubName}!`);
+      }
+      renderProfileView();
+      renderDiscussions();
+    }
+
+    function showSuggestedClubs() {
+      const container = document.getElementById('suggestedClubsContainer');
+      container.innerHTML = '';
+      
+      let matches = 0;
+      clubInterestMapping.forEach(club => {
+        const matchingInterests = club.interests.filter(interest => selectedInterests.has(interest));
+        if (matchingInterests.length > 0) {
+          matches++;
+          const isJoined = joinedClubs.has(club.name);
+          const btnText = isJoined ? '<i class="fa-solid fa-check mr-1"></i> Joined' : 'Join';
+          const btnClass = isJoined 
+            ? 'px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold shadow-sm hover:bg-emerald-700 transition-colors flex items-center'
+            : 'px-3 py-1.5 bg-uvic-blue text-white rounded-lg text-xs font-bold shadow-sm hover:bg-slate-900 transition-colors flex items-center';
+
+          container.innerHTML += `
+            <div class="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between shadow-sm hover:border-slate-300 transition-colors">
+              <div>
+                <h4 class="text-sm font-bold text-slate-800 leading-tight">${club.name}</h4>
+                <p class="text-[10px] text-slate-500 capitalize mt-0.5"><span class="font-semibold text-slate-600">Matches:</span> ${matchingInterests.join(', ')}</p>
+              </div>
+              <button onclick="toggleJoinClub('${club.name.replace(/'/g, "\\'")}', this)" class="${btnClass}">
+                ${btnText}
+              </button>
+            </div>
+          `;
+        }
+      });
+
+      if (matches === 0) {
+        container.innerHTML = `
+          <div class="p-5 mt-2 text-center border-2 border-dashed border-slate-300 rounded-xl bg-slate-50/50">
+            <div class="w-12 h-12 bg-slate-200 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
+              <i class="fa-solid fa-compass"></i>
+            </div>
+            <p class="text-xs text-slate-600 font-medium">No specific club matches found for your exact interests, but you can explore all clubs in the Discussions tab!</p>
+          </div>
+        `;
+      }
+
+      switchScreen('screen-suggested-clubs');
+    }
+
+    const mockOtherUsers = {
+      'alice': { name: 'Alice', dept: 'Psychology • 1st Year', courses: ['PSYC 100A', 'SOCI 100A'], clubs: ['Movies Club', 'Dance Club'], interests: ['indie music', 'coffee', 'outdoors'], bio: 'Loves hiking, indie music, and coffee strolls...' },
+      'charlie': { name: 'Charlie', dept: 'Computer Science', courses: ['CSC 225', 'MATH 211'], clubs: ['Game Dev Club', 'AI Club'], interests: ['programming', 'gaming'], bio: 'Taking CSC 225, looking for study partners!' },
+      'bob': { name: 'Bob', dept: 'Engineering', courses: ['ENGR 110', 'MATH 100'], clubs: ['Board Game Club', 'Chess Club'], interests: ['board games', 'hiking', 'sports'], bio: 'Huge board gamer and outdoor explorer.' },
+      'zack': { name: 'Zack', dept: 'Business • Exchange', courses: ['COM 100'], clubs: ['Exercise Club'], interests: ['gym', 'travel'], bio: 'New in Victoria, looking for gym buddies.' },
+      'jack': { name: 'Jack', dept: 'Geography', courses: ['GEOG 103'], clubs: ['Wildlife Club', 'Canoe Club'], interests: ['outdoors', 'environment'], bio: 'Trail leader, outdoors enthusiast.' },
+      'jill': { name: 'Jill', dept: 'Psychology', courses: ['PSYC 201'], clubs: ['Mental Health Awareness Club'], interests: ['reading', 'movies'], bio: 'Always down for a good movie night.' },
+      'kate': { name: 'Kate', dept: 'Linguistics', courses: ['LING 100'], clubs: ['Debate Club'], interests: ['languages', 'travel'], bio: 'Learning Spanish, want to practice?' },
+      'sarah': { name: 'Sarah', dept: 'Biology', courses: ['BIOL 150B'], clubs: ['Health Club', 'Recycling Club'], interests: ['nature', 'animals'], bio: 'Plant mom and biology nerd.' }
+    };
+
+    function viewOtherProfile(userId) {
+      const lowerId = userId.toLowerCase();
+      currentViewedProfile = lowerId;
+      const user = mockOtherUsers[lowerId];
+      if (!user) return;
+      
+      document.getElementById('otherProfileName').textContent = user.name;
+      document.getElementById('otherProfileDept').textContent = user.dept;
+      document.getElementById('otherProfileBio').textContent = `"${user.bio}"`;
+      document.getElementById('otherProfileInitials').textContent = user.name.charAt(0).toUpperCase();
+
+      const coursesContainer = document.getElementById('otherProfileCourses');
+      coursesContainer.innerHTML = '';
+      user.courses.forEach(course => {
+        const badge = document.createElement('span');
+        badge.className = 'px-2.5 py-1 bg-slate-100 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700';
+        badge.textContent = course;
+        coursesContainer.appendChild(badge);
+      });
+
+      const clubsContainer = document.getElementById('otherProfileClubs');
+      clubsContainer.innerHTML = '';
+      if (user.clubs && user.clubs.length > 0) {
+        user.clubs.forEach(club => {
+          const badge = document.createElement('span');
+          badge.className = 'px-2.5 py-1 bg-purple-100 text-purple-800 border border-purple-200 rounded-lg text-xs font-semibold flex items-center gap-1';
+          badge.innerHTML = `<i class="fa-solid fa-users text-[10px]"></i> ${club}`;
+          clubsContainer.appendChild(badge);
+        });
+      } else {
+        clubsContainer.innerHTML = `<span class="text-xs text-slate-400 italic">No clubs joined</span>`;
+      }
+
+      const interestsContainer = document.getElementById('otherProfileInterests');
+      interestsContainer.innerHTML = '';
+      user.interests.forEach(interest => {
+        const badge = document.createElement('span');
+        badge.className = 'px-2.5 py-1 bg-slate-800 text-white rounded-md text-xs font-medium';
+        badge.textContent = interest;
+        interestsContainer.appendChild(badge);
+      });
+
+      const profileBtn = document.getElementById('otherProfileConnectBtn');
+      profileBtn.onclick = () => handleConnect(lowerId, user.name);
+
+      if (requestedConnections.has(lowerId)) {
+        profileBtn.disabled = true;
+        profileBtn.innerHTML = `<i class="fa-solid fa-check text-xs"></i><span>REQUEST SENT</span>`;
+        profileBtn.className = "w-full py-2.5 px-4 bg-emerald-600 text-white font-bold rounded-xl text-sm shadow-md flex items-center justify-center gap-2";
+      } else {
+        profileBtn.disabled = false;
+        profileBtn.innerHTML = `<i class="fa-solid fa-user-plus text-xs"></i><span>CONNECT</span>`;
+        profileBtn.className = "w-full py-2.5 px-4 bg-uvic-blue hover:bg-slate-900 text-white font-bold rounded-xl text-sm shadow-md flex items-center justify-center gap-2";
+      }
+
+      document.getElementById('appHeaderTitle').innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-uvic-blue inline-block"></span> ${user.name}'s Profile`;
+      switchScreen('screen-other-profile');
+    }
+
+    // Filter peers in general hub
+    function filterPeers(category) {
+      const filterAllBtn = document.getElementById('peerFilter-all');
+      const filterCoursesBtn = document.getElementById('peerFilter-courses');
+      const filterHikeBtn = document.getElementById('peerFilter-hike');
+
+      [filterAllBtn, filterCoursesBtn, filterHikeBtn].forEach(btn => {
+        btn.className = "px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium flex-shrink-0";
+      });
+
+      if (category === 'all') {
+        filterAllBtn.className = "px-2.5 py-1 bg-uvic-blue text-white rounded-lg font-medium shadow-sm flex-shrink-0";
+        showToast("Showing all available peers");
+      } else if (category === 'courses') {
+        filterCoursesBtn.className = "px-2.5 py-1 bg-uvic-blue text-white rounded-lg font-medium shadow-sm flex-shrink-0";
+        showToast("Filtered by classmates in CSC 230 & STAT 260");
+      } else if (category === 'hike') {
+        filterHikeBtn.className = "px-2.5 py-1 bg-uvic-blue text-white rounded-lg font-medium shadow-sm flex-shrink-0";
+        showToast("Filtered by Global Hike attendees");
+      }
+    }
+
+    // Navigation System
+    function switchScreen(screenId) {
+      if (screenId === 'screen-discussion') {
+        renderDiscussions();
+      } else if (screenId === 'screen-view-profile') {
+        renderProfileView();
+      }
+
+      const screens = document.querySelectorAll('.screen-view');
+      screens.forEach(screen => screen.classList.add('hidden'));
+
+      const target = document.getElementById(screenId);
+      if (target) {
+        target.classList.remove('hidden');
+        target.classList.remove('slide-enter');
+        void target.offsetWidth;
+        target.classList.add('slide-enter');
+      }
+
+      if (screenId !== currentScreen) {
+        screenHistory.push(screenId);
+        currentScreen = screenId;
+      }
+
+      const appHeader = document.getElementById('appHeader');
+      const bottomNav = document.getElementById('bottomNav');
+      const navBackBtn = document.getElementById('navBackBtn');
+      const headerTitle = document.getElementById('appHeaderTitle');
+
+      // Update Bottom Nav active states
+      updateBottomNavState(screenId);
+
+      if (screenId === 'screen-notification' || screenId === 'screen-login') {
+        appHeader.classList.add('hidden');
+        bottomNav.classList.add('hidden');
+      } else {
+        appHeader.classList.remove('hidden');
+        bottomNav.classList.remove('hidden');
+
+        if (screenId === 'screen-view-profile') {
+          headerTitle.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span> My Profile`;
+          navBackBtn.classList.add('hidden');
+        } else if (screenId === 'screen-new-profile' || screenId === 'screen-profile-step2') {
+          headerTitle.innerHTML = `<span class="w-2 h-2 rounded-full bg-uvic-gold inline-block"></span> ${isEditMode ? 'Edit Profile' : 'Account Setup'}`;
+          navBackBtn.classList.remove('hidden');
+        } else if (screenId === 'screen-events-list') {
+          headerTitle.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span> UVic Events`;
+          navBackBtn.classList.add('hidden');
+        } else if (screenId === 'screen-discussion') {
+          headerTitle.innerHTML = `<span class="w-2 h-2 rounded-full bg-purple-400 inline-block"></span> Discussions`;
+          navBackBtn.classList.add('hidden');
+        } else if (screenId === 'screen-other-profile') {
+          navBackBtn.classList.remove('hidden');
+          bottomNav.classList.add('hidden');
+        } else if (screenId === 'screen-chat') {
+          navBackBtn.classList.remove('hidden');
+          bottomNav.classList.add('hidden');
+        } else if (screenId === 'screen-event-details') {
+          headerTitle.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-300 inline-block"></span> Event Details`;
+          navBackBtn.classList.remove('hidden');
+        } else if (screenId === 'screen-peers-hub') {
+          headerTitle.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span> Find Peers`;
+          navBackBtn.classList.add('hidden');
+        } else if (screenId === 'screen-peers-request') {
+          headerTitle.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span> Hike Group`;
+          navBackBtn.classList.remove('hidden');
+        } else if (screenId === 'screen-suggested-clubs') {
+          headerTitle.innerHTML = `<span class="w-2 h-2 rounded-full bg-uvic-gold inline-block"></span> Recommended Clubs`;
+          navBackBtn.classList.add('hidden');
+          bottomNav.classList.add('hidden');
+        }
+      }
+    }
+
+    function updateBottomNavState(screenId) {
+      const btnEvents = document.getElementById('nav-btn-events');
+      const btnDisc = document.getElementById('nav-btn-discussions');
+      const btnPeers = document.getElementById('nav-btn-peers');
+      const btnProf = document.getElementById('nav-btn-profile');
+
+      [btnEvents, btnDisc, btnPeers, btnProf].forEach(btn => {
+        if (btn) btn.className = "flex flex-col items-center py-1 text-slate-500 hover:text-uvic-blue";
+      });
+
+      if (screenId === 'screen-events-list' || screenId === 'screen-event-details') {
+        if (btnEvents) btnEvents.className = "flex flex-col items-center py-1 text-uvic-blue font-semibold";
+      } else if (screenId === 'screen-discussion') {
+        if (btnDisc) btnDisc.className = "flex flex-col items-center py-1 text-uvic-blue font-semibold";
+      } else if (screenId === 'screen-peers-hub' || screenId === 'screen-peers-request') {
+        if (btnPeers) btnPeers.className = "flex flex-col items-center py-1 text-uvic-blue font-semibold";
+      } else if (screenId === 'screen-view-profile' || screenId === 'screen-new-profile' || screenId === 'screen-profile-step2') {
+        if (btnProf) btnProf.className = "flex flex-col items-center py-1 text-uvic-blue font-semibold";
+      }
+    }
+
+    function navigatePrevious() {
+      if (screenHistory.length > 1) {
+        screenHistory.pop();
+        const prev = screenHistory.pop();
+        switchScreen(prev || 'screen-events-list');
+      } else {
+        switchScreen('screen-events-list');
+      }
+    }
+
+    function openEventDetails(eventId) {
+      switchScreen('screen-event-details');
+    }
+
+    function openHikePeersScreen() {
+      switchScreen('screen-peers-request');
+    }
+
+    function handleConnect(userId, name) {
+      const lowerId = userId.toLowerCase();
+      requestedConnections.add(lowerId);
+      showToast(`Friend request sent to ${name}!`);
+
+      // Update all matching inline buttons across the app
+      const buttons = document.querySelectorAll(`.connect-btn-${lowerId}`);
+      buttons.forEach(btn => {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-check text-[10px]"></i> <span class="ml-0.5">Sent</span>`;
+        
+        btn.classList.remove('bg-uvic-blue', 'hover:bg-slate-900', 'bg-white', 'border-slate-300', 'hover:border-uvic-blue', 'hover:text-uvic-blue', 'text-slate-700');
+        btn.classList.add('bg-emerald-600', 'text-white', 'border-transparent');
+      });
+
+      if (currentViewedProfile === lowerId) {
+        const profileBtn = document.getElementById('otherProfileConnectBtn');
+        profileBtn.disabled = true;
+        profileBtn.innerHTML = `<i class="fa-solid fa-check text-xs"></i><span>REQUEST SENT</span>`;
+        profileBtn.className = "w-full py-2.5 px-4 bg-emerald-600 text-white font-bold rounded-xl text-sm shadow-md flex items-center justify-center gap-2";
+      }
+    }
+
+    function handleGoingChange(eventId, isGoing) {
+      if (isGoing) {
+        if (eventId === 'farm' && document.getElementById('going-hike') && document.getElementById('going-hike').checked) {
+          if (document.getElementById('going-farm')) document.getElementById('going-farm').checked = false;
+          if (document.getElementById('details-going-farm')) document.getElementById('details-going-farm').checked = false;
+          showToast("You cannot RSVP to overlapping events (Hike overlaps with Farm Crawling).");
+          return;
+        }
+        if (eventId === 'hike' && document.getElementById('going-farm') && document.getElementById('going-farm').checked) {
+          if (document.getElementById('going-hike')) document.getElementById('going-hike').checked = false;
+          if (document.getElementById('details-going-hike')) document.getElementById('details-going-hike').checked = false;
+          showToast("You cannot RSVP to overlapping events (Farm Crawling overlaps with Hike).");
+          return;
+        }
+      }
+
+      const listCheckbox = document.getElementById(`going-${eventId}`);
+      const detailsCheckbox = document.getElementById(`details-going-${eventId}`);
+      
+      if (listCheckbox) listCheckbox.checked = isGoing;
+      if (detailsCheckbox) detailsCheckbox.checked = isGoing;
+
+      if (isGoing) {
+        showToast("RSVP saved! You'll now appear in the attendees list.");
+      } else {
+        showToast("RSVP removed.");
+      }
+    }
+
+    function toggleEventReminder(eventName, timeStr) {
+      showToast(`Reminder set for ${eventName} (${timeStr})`);
+    }
+
+    let activeReminders = {};
+
+    function toggleSyncReminder(eventId, eventName, timeStr) {
+      activeReminders[eventId] = !activeReminders[eventId];
+      const isActive = activeReminders[eventId];
+
+      const listBtn = document.getElementById(`list-reminder-${eventId}`);
+      const detailsBtn = document.getElementById(`details-reminder-${eventId}`);
+
+      if (listBtn) {
+        if (isActive) {
+          listBtn.className = "text-slate-600 hover:text-uvic-gold font-medium flex items-center space-x-1 py-1 px-2 rounded-lg bg-amber-50 text-amber-900";
+          listBtn.innerHTML = `<i class="fa-solid fa-bell text-xs text-amber-600"></i><span>Active Reminder</span>`;
+        } else {
+          listBtn.className = "text-slate-600 hover:text-uvic-gold font-medium flex items-center space-x-1 py-1 px-2 rounded-lg hover:bg-slate-50 transition-colors";
+          listBtn.innerHTML = `<i class="fa-regular fa-bell text-xs text-slate-400"></i><span>Set Reminder</span>`;
+        }
+      }
+
+      if (detailsBtn) {
+        if (isActive) {
+          detailsBtn.className = "flex items-center space-x-1.5 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-lg border border-amber-200";
+          detailsBtn.innerHTML = `<i class="fa-solid fa-bell text-xs"></i><span>Active Reminder</span>`;
+        } else {
+          detailsBtn.className = "flex items-center space-x-1.5 text-xs font-semibold text-slate-600 bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200";
+          detailsBtn.innerHTML = `<i class="fa-regular fa-bell text-xs"></i><span>Set Reminder</span>`;
+        }
+      }
+
+      if (isActive) {
+        showToast(`Reminder set for ${eventName} (${timeStr})`);
+      } else {
+        showToast(`Reminder removed for ${eventName}`);
+      }
+    }
+
+    function triggerReminderModal(eventName, timeStr) {
+      switchScreen('screen-notification');
+    }
+
+    // --- Chat Logic ---
+    const mockChats = {
+      'CSC 230': [
+        { sender: 'Alice', text: 'Anyone want to form a study group?', time: '10:42 AM', type: 'other' }
+      ],
+      'STAT 260': [],
+      'UVic Outdoors Club': [
+        { sender: 'Jack', text: 'We\'re meeting at the trailhead!', time: 'Yesterday', type: 'other' },
+        { sender: 'Sarah', text: 'Can\'t wait! Should I bring extra water?', time: '9:00 AM', type: 'other' }
+      ],
+      'Global Community': [
+        { sender: 'Zack', text: 'See you all at the social!', time: '11:15 AM', type: 'other' }
+      ]
+    };
+
+    let currentChatTopic = '';
+
+    function openChat(topic) {
+      currentChatTopic = topic;
+      const container = document.getElementById('chatMessageContainer');
+      container.innerHTML = '';
+
+      if (!mockChats[topic]) {
+        mockChats[topic] = [
+          { sender: 'System', text: `Welcome to the ${topic} discussion forum!`, time: 'Just now', type: 'system' }
+        ];
+      }
+      
+      const messages = mockChats[topic];
+      if (messages.length === 0) {
+        container.innerHTML = `<div class="text-center text-xs text-slate-400 mt-4 empty-chat-msg">No messages yet. Say hello!</div>`;
+      } else {
+        messages.forEach(msg => {
+          appendMessage(msg.sender, msg.text, msg.time, msg.type);
+        });
+      }
+      
+      document.getElementById('appHeaderTitle').innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-purple-400 inline-block"></span> ${topic}`;
+      switchScreen('screen-chat');
+      
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function appendMessage(sender, text, time, type) {
+      const container = document.getElementById('chatMessageContainer');
+      const msgDiv = document.createElement('div');
+      
+      if (type === 'system') {
+        msgDiv.className = "flex justify-center my-3";
+        msgDiv.innerHTML = `<span class="text-[10px] bg-slate-200 text-slate-600 px-3 py-1 rounded-full shadow-sm">${text}</span>`;
+      } else if (type === 'me') {
+        msgDiv.className = "flex justify-end mb-3";
+        msgDiv.innerHTML = `
+          <div class="max-w-[80%] bg-uvic-blue text-white rounded-2xl rounded-tr-sm p-3 shadow-sm">
+            <p class="text-sm leading-snug">${text}</p>
+            <div class="text-[9px] text-blue-200 text-right mt-1">${time}</div>
+          </div>
+        `;
+      } else {
+        msgDiv.className = "flex justify-start mb-3";
+        const initial = sender.charAt(0).toUpperCase();
+        msgDiv.innerHTML = `
+          <div class="flex items-end gap-2 max-w-[85%]">
+            <div class="w-7 h-7 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[10px] font-bold flex-shrink-0 mb-1 border border-slate-300 shadow-sm">${initial}</div>
+            <div>
+              <div class="text-[10px] text-slate-500 ml-1 mb-0.5 font-medium">${sender}</div>
+              <div class="bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tl-sm p-3 shadow-sm">
+                <p class="text-sm leading-snug">${text}</p>
+                <div class="text-[9px] text-slate-400 text-right mt-1">${time}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      container.appendChild(msgDiv);
+      
+      const emptyState = container.querySelector('.empty-chat-msg');
+      if (emptyState) emptyState.remove();
+    }
+
+    function sendChatMessage() {
+      const input = document.getElementById('chatInputField');
+      const text = input.value.trim();
+      if (!text) return;
+      
+      const now = new Date();
+      let hours = now.getHours();
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12;
+      const timeString = `${hours}:${minutes} ${ampm}`;
+      
+      appendMessage('Me', text, timeString, 'me');
+      
+      if (!mockChats[currentChatTopic]) mockChats[currentChatTopic] = [];
+      mockChats[currentChatTopic].push({ sender: 'Me', text: text, time: timeString, type: 'me' });
+      
+      input.value = '';
+      const container = document.getElementById('chatMessageContainer');
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function handleChatKeyPress(event) {
+      if (event.key === 'Enter') {
+        sendChatMessage();
+      }
+    }
+
+    let toastTimeout;
+    function showToast(message) {
+      const toast = document.getElementById('toastNotification');
+      const toastMsg = document.getElementById('toastMessage');
+      toastMsg.textContent = message;
+
+      toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-[-10px]');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        hideToast();
+      }, 3200);
+    }
+
+    function hideToast() {
+      const toast = document.getElementById('toastNotification');
+      toast.classList.remove('opacity-100', 'translate-y-0');
+      toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-[-10px]');
+    }
+
+    window.onload = function() {
+      renderInterests();
+      renderProfileView();
+      renderDiscussions();
+      switchScreen('screen-login');
+    };
+  </script>
+</body>
+</html>
