@@ -580,6 +580,35 @@
               </div>
             </div>
 
+            <!-- Event: 9/29 Farm Crawling -->
+            <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm hover:border-blue-300 transition-all">
+              <div class="flex items-start justify-between cursor-pointer" onclick="openEventDetails('farm')">
+                <div class="flex items-start gap-3">
+                  <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-100 flex flex-col items-center justify-center flex-shrink-0">
+                    <span class="text-[10px] uppercase font-bold text-emerald-600">Sep</span>
+                    <span class="text-base font-bold leading-none">29</span>
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-sm text-slate-900 leading-snug hover:text-uvic-blue">Farm Crawling at Haliburton Community Organic Farm!</h3>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Campus Community Garden &bull; 9:30am - 5:00pm</p>
+                  </div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-slate-300 text-xs mt-1"></i>
+              </div>
+
+              <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+                <label class="flex items-center space-x-2 cursor-pointer font-medium text-slate-700">
+                  <input type="checkbox" id="going-farm" onchange="handleGoingChange('farm', this.checked)" class="w-4 h-4 rounded text-uvic-blue focus:ring-0">
+                  <span>I'm going</span>
+                </label>
+
+                <button id="list-reminder-farm" onclick="toggleSyncReminder('farm', 'Farm Crawling', 'Sep 29, 9:30am')" class="text-slate-600 hover:text-uvic-gold font-medium flex items-center space-x-1 py-1 px-2 rounded-lg hover:bg-slate-50 transition-colors">
+                  <i class="fa-regular fa-bell text-xs text-slate-400"></i>
+                  <span>Set Reminder</span>
+                </button>
+              </div>
+            </div>
+
             <!-- Event 2: 9/29 Global Community Hike -->
             <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm hover:border-blue-300 transition-all">
               <div class="flex items-start justify-between cursor-pointer" onclick="openHikePeersScreen()">
@@ -1828,13 +1857,13 @@
         if (eventId === 'farm' && document.getElementById('going-hike') && document.getElementById('going-hike').checked) {
           if (document.getElementById('going-farm')) document.getElementById('going-farm').checked = false;
           if (document.getElementById('details-going-farm')) document.getElementById('details-going-farm').checked = false;
-          showToast("You cannot RSVP to overlapping events (Hike overlaps with Farm Crawling).");
+          showToast("You cannot RSVP to two events happening at the same time.");
           return;
         }
         if (eventId === 'hike' && document.getElementById('going-farm') && document.getElementById('going-farm').checked) {
           if (document.getElementById('going-hike')) document.getElementById('going-hike').checked = false;
           if (document.getElementById('details-going-hike')) document.getElementById('details-going-hike').checked = false;
-          showToast("You cannot RSVP to overlapping events (Farm Crawling overlaps with Hike).");
+          showToast("You cannot RSVP to two events happening at the same time.");
           return;
         }
       }
