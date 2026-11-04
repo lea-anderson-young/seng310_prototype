@@ -638,7 +638,7 @@
                   <span>I'm going</span>
                 </label>
 
-                <button onclick="triggerReminderModal('Global Community Hike', 'Today at 4:30pm')" class="text-slate-600 hover:text-uvic-gold font-medium flex items-center space-x-1 py-1 px-2 rounded-lg bg-amber-50 text-amber-900">
+                <button id="list-reminder-hike-modal" onclick="triggerReminderModal('Global Community Hike', 'Today at 4:30pm')" class="text-slate-600 hover:text-uvic-gold font-medium flex items-center space-x-1 py-1 px-2 rounded-lg bg-amber-50 text-amber-900">
                   <i class="fa-solid fa-bell text-xs text-amber-600"></i>
                   <span>Active Reminder</span>
                 </button>
@@ -1367,6 +1367,33 @@
       joinedClubs.clear();
       userCourses = [];
       userDept = "";
+      
+      // Reset all RSVP checkboxes
+      document.querySelectorAll('input[type="checkbox"][id^="going-"], input[type="checkbox"][id^="details-going-"]').forEach(cb => {
+        cb.checked = false;
+      });
+
+      // Clear internal active reminders state
+      activeReminders = {};
+      
+      // Reset reminder buttons in the main events list
+      document.querySelectorAll('button[id^="list-reminder-"]').forEach(btn => {
+        btn.className = "text-slate-600 hover:text-uvic-gold font-medium flex items-center space-x-1 py-1 px-2 rounded-lg hover:bg-slate-50 transition-colors";
+        btn.innerHTML = `<i class="fa-regular fa-bell text-xs text-slate-400"></i><span>Set Reminder</span>`;
+        
+        // Convert the pre-set modal reminder into a standard togglable reminder for new users
+        if (btn.id === 'list-reminder-hike-modal') {
+            btn.onclick = () => toggleSyncReminder('hike', 'Global Community Hike', 'Today at 4:30pm');
+            btn.id = 'list-reminder-hike';
+        }
+      });
+      
+      // Reset reminder buttons in the event details screen
+      document.querySelectorAll('button[id^="details-reminder-"]').forEach(btn => {
+        btn.className = "flex items-center space-x-1.5 text-xs font-semibold text-slate-600 bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200";
+        btn.innerHTML = `<i class="fa-regular fa-bell text-xs"></i><span>Set Reminder</span>`;
+      });
+
       renderInterests();
 
       switchScreen('screen-new-profile');
